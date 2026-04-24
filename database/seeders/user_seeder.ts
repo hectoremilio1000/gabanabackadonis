@@ -1,6 +1,7 @@
 // database/seeders/users_seeder.ts
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 import User from '#models/user'
+import hash from '@adonisjs/core/services/hash'
 
 export default class UsersSeeder extends BaseSeeder {
   // opcional: solo en dev
@@ -30,6 +31,7 @@ export default class UsersSeeder extends BaseSeeder {
 
     for (const r of rows) {
       const email = r.email.trim().toLowerCase()
+      const password = await hash.use('scrypt').make(r.pass)
 
       await User.updateOrCreate(
         { email }, // where
@@ -37,8 +39,7 @@ export default class UsersSeeder extends BaseSeeder {
           fullName: r.fullName,
           email,
           role: r.role,
-          // 👇 aquí va en claro, el modelo la hashea en @beforeSave
-          password: r.pass,
+          password,
         }
       )
     }
