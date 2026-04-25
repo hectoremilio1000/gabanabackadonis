@@ -56,7 +56,10 @@ export default class ListingsController {
 
   // GET /api/listings/:slug
   public async show({ params, response }: HttpContext) {
-    const listing = await Listing.query().where('slug', params.slug).first()
+    const listing = await Listing.query()
+      .where('slug', params.slug)
+      .where('status', 'published')
+      .first()
 
     if (!listing) {
       return response.notFound({ error: 'Listing no encontrado' })
