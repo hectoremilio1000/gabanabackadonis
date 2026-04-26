@@ -1,6 +1,15 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
+function isMissingObjectError(error: unknown) {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'name' in error &&
+    ['NoSuchKey', 'NotFound', 'NoSuchBucket'].includes(String(error.name))
+  )
+}
+
 export default class MediaController {
   public async show({ params, response }: HttpContext) {
     const token = params.token
@@ -30,7 +39,17 @@ export default class MediaController {
       },
     })
 
-    const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }))
+    let object
+    try {
+      object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }))
+    } catch (error) {
+      if (isMissingObjectError(error)) {
+        return response.notFound({ error: 'Archivo no encontrado' })
+      }
+
+      return response.serviceUnavailable({ error: 'Storage no disponible' })
+    }
+
     const bytes = await object.Body?.transformToByteArray()
 
     if (!bytes) {

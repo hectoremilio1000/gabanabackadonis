@@ -56,6 +56,11 @@ export default class ListingMediaUploader {
       } catch {}
     }
 
+    const publicBaseUrl = process.env.S3_PUBLIC_BASE_URL
+    if (publicBaseUrl) {
+      return `${publicBaseUrl.replace(/\/$/, '')}/${key}`
+    }
+
     const apiBaseUrl =
       process.env.API_PUBLIC_BASE_URL ||
       process.env.RAILWAY_SERVICE_GABANABACKADONIS_URL ||
