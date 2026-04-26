@@ -1,59 +1,53 @@
 // app/services/listing_media_uploader.ts
 import fs from 'node:fs'
 import { randomUUID } from 'node:crypto'
-import ftp from 'basic-ftp'
 import sharp from 'sharp'
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
 type UploadOpts = { listingId: number; localPath: string }
 
 export default class ListingMediaUploader {
   static async upload({ listingId, localPath }: UploadOpts) {
-    const host = process.env.FTPS_HOST!
-    const port = Number(process.env.FTPS_PORT || 21)
-    const user = process.env.FTPS_USER!
-    const password = process.env.FTPS_PASS!
-    const secure = String(process.env.FTPS_SECURE ?? 'true') === 'true'
-    const baseUrl = process.env.MEDIA_BASE_URL!
-    // ej. MEDIA_BASE_URL=https://media.impulsorestaurantero.com/traspasos
+    const endpoint = process.env.S3_ENDPOINT
+    const region = process.env.S3_REGION || 'auto'
+    const bucket = process.env.S3_BUCKET
+    const accessKeyId = process.env.S3_ACCESS_KEY_ID
+    const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY
 
-    if (!host || !user || !password || !baseUrl) {
-      throw new Error('FTPS/MEDIA_BASE_URL no configurados')
+    if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) {
+      throw new Error('S3 storage no configurado')
     }
 
-    const outExt = 'webp'
-    const fileName = `${Date.now()}-${randomUUID()}.${outExt}`
-    const tmpOptimized = `${localPath}.opt.${outExt}`
+    const fileName = `${Date.now()}-${randomUUID()}.webp`
+    const tmpOptimized = `${localPath}.opt.webp`
+    const key = `gabana/listings/${listingId}/${fileName}`
 
-    // Optimizar imagen → WEBP
     const MAX_W = 1600
     const input = sharp(localPath, { failOn: 'none' }).rotate()
     const meta = await input.metadata()
     const width = meta.width && meta.width > MAX_W ? MAX_W : meta.width || MAX_W
     await input.resize({ width }).webp({ quality: 80, effort: 4 }).toFile(tmpOptimized)
 
-    // 👇 SUBCARPETA como en candidates, pero ahora: gabana/listings/<id>
-    const remoteDir = `gabana/listings/${listingId}`
-
-    const client = new ftp.Client()
-
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[FTPS] host:', host, 'port:', port, 'secure:', secure)
-      console.log('[FTPS] upload into dir:', remoteDir, 'file:', fileName)
-    }
+    const client = new S3Client({
+      endpoint,
+      region,
+      forcePathStyle: true,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+    })
 
     try {
-      await client.access({ host, port, user, password, secure })
-      // esto crea /traspasos/gabana/listings/<listingId>
-      await client.ensureDir(remoteDir)
-      await client.uploadFrom(tmpOptimized, fileName)
-
-      try {
-        await client.cd('/')
-      } catch {}
+      await client.send(
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: key,
+          Body: fs.createReadStream(tmpOptimized),
+          ContentType: 'image/webp',
+        })
+      )
     } finally {
-      try {
-        client.close()
-      } catch {}
       try {
         fs.unlinkSync(localPath)
       } catch {}
@@ -62,7 +56,11 @@ export default class ListingMediaUploader {
       } catch {}
     }
 
-    // URL pública bajo /traspasos/gabana/listings/<id>/<file>
-    return `${baseUrl}/gabana/listings/${listingId}/${fileName}`
+    const apiBaseUrl =
+      process.env.API_PUBLIC_BASE_URL ||
+      process.env.RAILWAY_SERVICE_GABANABACKADONIS_URL ||
+      'http://localhost:3333'
+    const token = Buffer.from(key).toString('base64url')
+    return `${apiBaseUrl.replace(/\/$/, '')}/api/media/${token}`
   }
 }

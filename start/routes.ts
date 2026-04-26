@@ -6,6 +6,7 @@ const UsersController = () => import('#controllers/users_controller')
 const ListingsController = () => import('#controllers/listings_controller')
 const ListingPhotosController = () => import('#controllers/listing_photos_controller')
 const ListingFavoritesController = () => import('#controllers/listing_favorites_controller')
+const MediaController = () => import('#controllers/media_controller')
 
 router.get('/', async () => ({ api: 'gabana-backend', ok: true }))
 
@@ -43,6 +44,7 @@ router
       .use(middleware.auth())
 
     // catálogo público de propiedades (debe ir DESPUÉS del grupo /listings)
+    router.get('/media/:token', [MediaController, 'show'])
     router.get('/listings', [ListingsController, 'index'])
     router.get('/listings/:slug', [ListingsController, 'show'])
   })

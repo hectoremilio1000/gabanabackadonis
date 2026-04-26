@@ -22,9 +22,11 @@ function parseJsonArray(value: unknown): string[] {
   return []
 }
 
-function toDto(l: Listing & { coverImageUrl?: string | null }) {
+function toDto(l: Listing & { coverImageUrl?: string | null; photos?: Array<{ url: string }> }) {
   const priceLabel =
     l.priceLabel ?? `MN ${l.price.toLocaleString('es-MX', { maximumFractionDigits: 0 })}`
+
+  const photos = Array.isArray(l.photos) ? l.photos.map((photo) => photo.url) : []
 
   return {
     id: `listing-${l.id}`,
@@ -37,6 +39,7 @@ function toDto(l: Listing & { coverImageUrl?: string | null }) {
     highlights: parseJsonArray(l.highlights),
     mediaCount: l.mediaCount,
     image: l.coverImageUrl ?? '/imagenes/placeholder.jpg',
+    photos,
     beds: l.bedsLabel ?? '',
     size: l.sizeLabel ?? '',
     isPremier: l.isPremier,
@@ -49,7 +52,10 @@ function toDto(l: Listing & { coverImageUrl?: string | null }) {
 export default class ListingsController {
   // GET /api/listings
   public async index({}: HttpContext) {
-    const rows = await Listing.query().where('status', 'published').orderBy('created_at', 'desc')
+    const rows = await Listing.query()
+      .where('status', 'published')
+      .preload('photos', (query) => query.orderBy('sort_order', 'asc'))
+      .orderBy('created_at', 'desc')
 
     return rows.map((l) => toDto(l))
   }
@@ -59,6 +65,7 @@ export default class ListingsController {
     const listing = await Listing.query()
       .where('slug', params.slug)
       .where('status', 'published')
+      .preload('photos', (query) => query.orderBy('sort_order', 'asc'))
       .first()
 
     if (!listing) {
