@@ -17,61 +17,9 @@ import User from '#models/user'
  *   Oaxaca capital  — centro: 17.0732, -96.7266
  */
 
-// Pool de fotos Unsplash (IDs de fotos reales y estables — todas free use).
-// Rotamos por slug para que cada listing tenga set distinto pero determinístico.
-const PHOTO_POOL_HOUSE = [
-  '1564013799919-ab600027ffc6', // casa moderna con alberca
-  '1568605114967-8130f3a36994', // casa de playa
-  '1613977257363-707ba9348227', // interior moderno
-  '1600596542815-ffad4c1539a9', // casa minimalista
-  '1605276374104-dee2a0ed3cd6', // casa colonial
-  '1512917774080-9991f1c4c750', // mansion
-  '1583608205776-bfd35f0d9f83', // casa con jardin
-  '1502672260266-1c1ef2d93688', // sala interior
-  '1600585154340-be6161a56a0c', // cocina moderna
-  '1600210492486-724fe5c67fb0', // recamara principal
-  '1597218868981-1b68e15f0065', // baño moderno
-  '1600210492493-0946911123ea', // terraza
-]
-
-const PHOTO_POOL_BEACH = [
-  '1506905925346-21bda4d32df4', // casa playa palmeras
-  '1519046904884-53103b34b206', // playa palmeras
-  '1507525428034-b723cf961d3e', // playa mexico
-  '1523217582562-09d0def993a6', // vista mar
-  '1540541338287-41700207dee6', // surfista zicatela
-  '1519834785169-98be25ec3f84', // alberca infinity playa
-  '1572177812156-58036aae439c', // resort playa
-  '1571003123894-1f0594d2b5d9', // costa pacifico
-]
-
-const PHOTO_POOL_LAND = [
-  '1502920917128-1aa500764cbd', // terreno verde
-  '1469474968028-56623f02e42e', // paisaje natural
-  '1500382017468-9049fed747ef', // colina
-  '1559131397-f94da358f7ca', // lote naturaleza
-  '1542362567-b07e54358753', // lote
-  '1437209484568-e63b90a34f8b', // valle
-]
-
-const PHOTO_POOL_OAXACA_CITY = [
-  '1512136824195-f44ec7c70d52', // catedral oaxaca
-  '1568839049006-1edaa9e2f306', // centro historico
-  '1583779451027-a23c66ee8775', // calle colonial
-  '1565008447742-97f6f38c985c', // casa colonial mexicana
-  '1582719188393-bb71ca45dbb9', // patio andaluz
-  '1600566753190-17f0baa2a6c3', // arquitectura mexicana
-  '1564540583246-934409427776', // calle empedrada
-  '1571939228382-b2f2b585ce15', // mercado oaxaca
-]
-
-function pickFromPool(pool: string[], slug: string, idx: number): string {
-  // Hash simple del slug + idx para escoger determinístico del pool
-  let h = 0
-  const str = `${slug}-${idx}`
-  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0
-  return pool[Math.abs(h) % pool.length]!
-}
+// Las fotos demo usan picsum.photos con seeds determinísticos. picsum tiene
+// un pool curado (paisajes, arquitectura, interiores) — nunca devuelve coches
+// ni objetos extraños. Cada slug + index produce siempre la misma imagen.
 
 interface DemoListing {
   slug: string
@@ -719,20 +667,28 @@ const OAXACA_CAPITAL: DemoListing[] = [
   },
 ]
 
-function poolForListing(s: DemoListing): string[] {
-  if (s.propertyType === 'terreno') return PHOTO_POOL_LAND
+/**
+ * Genera URLs de picsum.photos con seeds determinísticos basados en el tipo
+ * de propiedad. picsum.photos siempre devuelve imágenes reales (paisajes,
+ * arquitectura, interiores) — nunca da coches porque su pool está curado.
+ *
+ * Categoría → prefijo del seed (para que el hash dé fotos consistentes):
+ *   - terreno → "land-"  (paisajes naturales)
+ *   - costa (Puerto Escondido / playa) → "beach-"  (vistas costeras)
+ *   - Oaxaca capital → "colonial-"  (arquitectura colonial / interiores)
+ */
+function categoryFor(s: DemoListing): string {
+  if (s.propertyType === 'terreno') return 'land'
   if (s.state === 'Oaxaca' && s.municipality !== 'San Pedro Mixtepec') {
-    return PHOTO_POOL_OAXACA_CITY
+    return 'colonial'
   }
-  // Puerto Escondido y costa: combinamos house + beach
-  return [...PHOTO_POOL_HOUSE, ...PHOTO_POOL_BEACH]
+  return 'beach'
 }
 
 function buildPhotoUrls(s: DemoListing): string[] {
-  const pool = poolForListing(s)
+  const cat = categoryFor(s)
   return Array.from({ length: s.photoCount }, (_, i) => {
-    const id = pickFromPool(pool, s.slug, i)
-    return `https://images.unsplash.com/photo-${id}?w=1600&q=80&auto=format&fit=crop`
+    return `https://picsum.photos/seed/${cat}-${s.slug}-${i}/1200/900`
   })
 }
 
