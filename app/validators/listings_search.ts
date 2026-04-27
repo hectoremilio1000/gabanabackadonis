@@ -44,8 +44,14 @@ const bboxPattern = /^-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?$/
 
 export const listingsSearchValidator = vine.compile(
   vine.object({
-    operation: vine.string().in([...operationTypes]).optional(),
-    type: vine.string().in([...propertyTypes]).optional(),
+    operation: vine
+      .string()
+      .in([...operationTypes])
+      .optional(),
+    type: vine
+      .string()
+      .in([...propertyTypes])
+      .optional(),
 
     beds_min: vine.number().min(0).max(20).optional(),
     baths_min: vine.number().min(0).max(20).optional(),
@@ -75,12 +81,13 @@ export const listingsSearchValidator = vine.compile(
     page: vine.number().min(1).optional(),
     per_page: vine.number().min(1).max(100).optional(),
 
-    sort: vine.string().in([...allowedSorts]).optional(),
+    sort: vine
+      .string()
+      .in([...allowedSorts])
+      .optional(),
 
     is_featured: vine.boolean().optional(),
   })
 )
 
-export type ListingsSearchInput = Awaited<
-  ReturnType<typeof listingsSearchValidator.validate>
->
+export type ListingsSearchInput = Awaited<ReturnType<typeof listingsSearchValidator.validate>>

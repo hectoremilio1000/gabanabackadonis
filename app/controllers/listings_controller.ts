@@ -48,9 +48,7 @@ function toDto(l: Listing) {
     image: l.coverImageUrl ?? '/imagenes/placeholder.jpg',
     photos,
     beds: l.bedsLabel ?? (l.beds !== null ? `${l.beds} rec.` : ''),
-    size:
-      l.sizeLabel ??
-      (l.m2Built ? `${l.m2Built} m²` : l.m2Land ? `${l.m2Land} m² terreno` : ''),
+    size: l.sizeLabel ?? (l.m2Built ? `${l.m2Built} m²` : l.m2Land ? `${l.m2Land} m² terreno` : ''),
     isPremier: l.isPremier,
     isFavorite: false,
     coords: l.lat !== null && l.lng !== null ? { lat: Number(l.lat), lng: Number(l.lng) } : null,
@@ -165,9 +163,7 @@ export default class ListingsController {
         const maxLat = Math.max(lat1, lat2)
         const minLng = Math.min(lng1, lng2)
         const maxLng = Math.max(lng1, lng2)
-        query
-          .whereBetween('lat', [minLat, maxLat])
-          .whereBetween('lng', [minLng, maxLng])
+        query.whereBetween('lat', [minLat, maxLat]).whereBetween('lng', [minLng, maxLng])
       }
     }
 
@@ -199,9 +195,13 @@ export default class ListingsController {
     }
 
     // Incrementa view_count async (sin esperar para no añadir latencia al response).
-    Listing.query().where('id', listing.id).increment('view_count', 1).exec().catch(() => {
-      /* swallow — analytics best-effort */
-    })
+    Listing.query()
+      .where('id', listing.id)
+      .increment('view_count', 1)
+      .exec()
+      .catch(() => {
+        /* swallow — analytics best-effort */
+      })
 
     return toDto(listing)
   }
@@ -406,10 +406,7 @@ export default class ListingsController {
     })
 
     // agentId solo lo cambia staff/superadmin.
-    if (
-      payload.agentId !== undefined &&
-      (me.role === 'superadmin' || me.role === 'staff')
-    ) {
+    if (payload.agentId !== undefined && (me.role === 'superadmin' || me.role === 'staff')) {
       listing.agentId = payload.agentId === null ? null : Number(payload.agentId)
     }
 

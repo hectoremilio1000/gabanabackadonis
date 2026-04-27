@@ -14,10 +14,7 @@ test.group('Catálogos públicos', () => {
     assert.exists(body.data.find((s) => s.code === '14' && s.name === 'Jalisco'))
   })
 
-  test('GET /api/states/:id/municipalities devuelve los del estado', async ({
-    client,
-    assert,
-  }) => {
+  test('GET /api/states/:id/municipalities devuelve los del estado', async ({ client, assert }) => {
     const states = await client.get('/api/states')
     const cdmx = (states.body() as any).data.find((s: any) => s.code === '09')
 

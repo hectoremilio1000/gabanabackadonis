@@ -50,8 +50,9 @@ type ListingSeed = {
 }
 
 function buildPhotoUrls(slug: string, count: number): string[] {
-  return Array.from({ length: count }, (_, i) =>
-    `https://picsum.photos/seed/${slug}-${i + 1}/1200/900`
+  return Array.from(
+    { length: count },
+    (_, i) => `https://picsum.photos/seed/${slug}-${i + 1}/1200/900`
   )
 }
 
@@ -120,10 +121,10 @@ export default class extends BaseSeeder {
 
       // Refrescar fotos (idempotente).
       await ListingPhoto.query().where('listing_id', listing.id).delete()
-      for (let i = 0; i < photoUrls.length; i += 1) {
+      for (const [i, photoUrl] of photoUrls.entries()) {
         await ListingPhoto.create({
           listingId: listing.id,
-          url: photoUrls[i],
+          url: photoUrl,
           sortOrder: i + 1,
           isCover: i === 0,
         })
