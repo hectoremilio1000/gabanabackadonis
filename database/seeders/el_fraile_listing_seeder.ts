@@ -46,8 +46,9 @@ export default class ElFraileListingSeeder extends BaseSeeder {
         sizeLabel: '+300 m² const. · 200 m² terreno',
         sizeM2: 300,
         isPremier: true,
-        badges: JSON.stringify(['Venta', 'Casa', 'Esquina', 'Fraccionamiento privado']),
-        highlights: JSON.stringify([
+        // Sprint 1: el modelo Listing serializa arrays a JSON via prepare/consume.
+        badges: ['Venta', 'Casa', 'Esquina', 'Fraccionamiento privado'],
+        highlights: [
           'Terreno 200 m²',
           'Construcción +300 m²',
           '3 recámaras en planta alta',
@@ -60,7 +61,7 @@ export default class ElFraileListingSeeder extends BaseSeeder {
           'Sistema hidroneumático',
           'Cisterna 5,000 L',
           'Tinaco 1,500 L',
-        ]),
+        ],
         lat: null,
         lng: null,
         status: 'published',

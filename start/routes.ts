@@ -7,6 +7,7 @@ const ListingsController = () => import('#controllers/listings_controller')
 const ListingPhotosController = () => import('#controllers/listing_photos_controller')
 const ListingFavoritesController = () => import('#controllers/listing_favorites_controller')
 const MediaController = () => import('#controllers/media_controller')
+const CatalogsController = () => import('#controllers/catalogs_controller')
 
 router.get('/', async () => ({ api: 'gabana-backend', ok: true }))
 
@@ -47,5 +48,10 @@ router
     router.get('/media/:token', [MediaController, 'show'])
     router.get('/listings', [ListingsController, 'index'])
     router.get('/listings/:slug', [ListingsController, 'show'])
+
+    // Catálogos públicos (Sprint 1, Gap #1)
+    router.get('/states', [CatalogsController, 'states'])
+    router.get('/states/:id/municipalities', [CatalogsController, 'municipalitiesByState'])
+    router.get('/amenities', [CatalogsController, 'amenities'])
   })
   .prefix('/api')
