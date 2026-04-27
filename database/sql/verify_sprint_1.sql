@@ -17,7 +17,9 @@ SHOW COLUMNS FROM listings;
 SHOW INDEX FROM listings WHERE Key_name LIKE 'idx_listings_%';
 
 -- 4. Counts de cada catálogo (esperado: 3 / 32 / >=20 / >=30).
-SELECT 'subscription_plans' AS tabla, COUNT(*) AS rows FROM subscription_plans
+-- Nota: usamos `total` en vez de `rows` porque ROWS es palabra reservada
+-- en MySQL 8+ (window functions: ROWS BETWEEN ... PRECEDING).
+SELECT 'subscription_plans' AS tabla, COUNT(*) AS total FROM subscription_plans
 UNION ALL SELECT 'states', COUNT(*) FROM states
 UNION ALL SELECT 'municipalities', COUNT(*) FROM municipalities
 UNION ALL SELECT 'amenities', COUNT(*) FROM amenities
