@@ -50,6 +50,19 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column({ columnName: 'parent_id' })
   declare parentId: number | null
 
+  // ── Sprint 5 — Stripe billing ───────────────────────────────────────────
+  @column({ columnName: 'stripe_customer_id' })
+  declare stripeCustomerId: string | null
+
+  @column({ columnName: 'stripe_subscription_id' })
+  declare stripeSubscriptionId: string | null
+
+  @column.dateTime({ columnName: 'subscription_current_period_end' })
+  declare subscriptionCurrentPeriodEnd: DateTime | null
+
+  @column({ columnName: 'subscription_status' })
+  declare subscriptionStatus: string | null
+
   @column.dateTime({ autoCreate: true }) declare createdAt: DateTime
   @column.dateTime({ autoCreate: true, autoUpdate: true }) declare updatedAt: DateTime
 

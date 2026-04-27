@@ -62,4 +62,26 @@ export default await Env.create(new URL('../', import.meta.url), {
   ADMIN_BASE_URL: Env.schema.string.optional(),
   PUBLIC_SITE_BASE_URL: Env.schema.string.optional(),
   TURNSTILE_SECRET_KEY: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Sprint 5 — Stripe billing
+  |----------------------------------------------------------
+  | Vacíos en Sprint 5 dev → modo stub (createCheckoutSession devuelve mock).
+  | Cuando Hector cree cuenta Stripe MX, productos Pro/Premium en Dashboard,
+  | y configure webhook → pega los 3 valores y empieza a llamar a Stripe real.
+  */
+  STRIPE_SECRET_KEY: Env.schema.string.optional(),
+  STRIPE_PUBLISHABLE_KEY: Env.schema.string.optional(),
+  STRIPE_WEBHOOK_SECRET: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Sprint 7 — DevOps / Observabilidad
+  |----------------------------------------------------------
+  | SENTRY_DSN: si está, errores se reportan a sentry.io.
+  | CORS_ALLOWED_ORIGINS: dominios extra para CORS (CSV).
+  */
+  SENTRY_DSN: Env.schema.string.optional(),
+  CORS_ALLOWED_ORIGINS: Env.schema.string.optional(),
 })

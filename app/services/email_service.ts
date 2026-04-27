@@ -206,6 +206,65 @@ export function buildLeadConfirmationEmail(ctx: LeadConfirmationEmailContext): {
   return { subject, html }
 }
 
+// ── Sprint 4 — Templates de verificación de agentes ───────────────────────
+
+export interface AgentApprovalEmailContext {
+  agentName: string
+  loginUrl: string
+}
+
+export function buildAgentApprovedEmail(ctx: AgentApprovalEmailContext): {
+  subject: string
+  html: string
+} {
+  const subject = `¡Bienvenido a Gabana, ${ctx.agentName}!`
+  const html = `<!doctype html>
+<html lang="es-MX">
+<body style="font-family:Montserrat,system-ui,sans-serif;color:#0F172A;background:#F8FAFC;padding:24px">
+  <div style="max-width:560px;margin:0 auto;background:#FFFFFF;border-radius:12px;padding:24px;box-shadow:0 1px 2px rgba(15,23,42,0.05)">
+    <h1 style="font-size:22px;line-height:1.3;margin:0 0 16px;color:#007BFF">¡Hola ${escapeHtml(ctx.agentName)}!</h1>
+    <p style="margin:0 0 16px">Tu cuenta de agente fue aprobada. Ya puedes publicar propiedades, recibir leads y crecer con Gabana.</p>
+    <p style="margin:0 0 16px">Empieza por publicar tu primer listing desde el panel:</p>
+    <p style="text-align:center;margin:24px 0">
+      <a href="${escapeAttr(ctx.loginUrl)}" style="display:inline-block;background:#007BFF;color:#FFFFFF;text-decoration:none;padding:12px 24px;border-radius:20px;font-weight:600">
+        Entrar al panel
+      </a>
+    </p>
+    <p style="font-size:12px;color:#64748B;margin:24px 0 0;text-align:center">
+      Cualquier duda, escríbenos a <a href="mailto:hola@gabanarealstate.com.mx" style="color:#007BFF">hola@gabanarealstate.com.mx</a>.
+    </p>
+  </div>
+</body>
+</html>`
+  return { subject, html }
+}
+
+export interface AgentRejectionEmailContext {
+  agentName: string
+  reason: string
+}
+
+export function buildAgentRejectedEmail(ctx: AgentRejectionEmailContext): {
+  subject: string
+  html: string
+} {
+  const subject = 'No pudimos verificar tu cuenta de Gabana'
+  const html = `<!doctype html>
+<html lang="es-MX">
+<body style="font-family:Montserrat,system-ui,sans-serif;color:#0F172A;background:#F8FAFC;padding:24px">
+  <div style="max-width:560px;margin:0 auto;background:#FFFFFF;border-radius:12px;padding:24px;box-shadow:0 1px 2px rgba(15,23,42,0.05)">
+    <h1 style="font-size:22px;line-height:1.3;margin:0 0 16px;color:#0F172A">Hola ${escapeHtml(ctx.agentName)},</h1>
+    <p style="margin:0 0 16px">Revisamos tu solicitud y por ahora no podemos aprobarla.</p>
+    <p style="margin:0 0 16px"><strong>Motivo:</strong></p>
+    <p style="margin:0 0 16px;padding:12px;background:#F8FAFC;border-radius:6px;white-space:pre-wrap">${escapeHtml(ctx.reason)}</p>
+    <p style="margin:0 0 16px">Si crees que es un error o quieres volver a aplicar con documentos actualizados, responde este correo.</p>
+    <p style="font-size:12px;color:#64748B;margin:24px 0 0">— Equipo Gabana</p>
+  </div>
+</body>
+</html>`
+  return { subject, html }
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 function escapeHtml(s: string): string {

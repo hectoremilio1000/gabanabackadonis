@@ -37,6 +37,10 @@ export default class SubscriptionPlan extends BaseModel {
   @column({ columnName: 'badge_label' })
   declare badgeLabel: string | null
 
+  // Sprint 5 — Stripe price ID (vacío si Stripe en modo stub).
+  @column({ columnName: 'stripe_price_id' })
+  declare stripePriceId: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

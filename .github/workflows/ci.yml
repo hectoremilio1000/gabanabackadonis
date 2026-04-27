@@ -1,0 +1,63 @@
+name: CI — gabanabackadonis
+
+on:
+  push:
+    branches: [main, "hector_dev/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: app
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      NODE_ENV: test
+      TZ: UTC
+      PORT: 3333
+      HOST: 127.0.0.1
+      LOG_LEVEL: warn
+      APP_KEY: test_app_key_must_be_32_chars_min_x
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: root
+      DB_DATABASE: app
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Wait for MySQL
+        run: |
+          for i in {1..30}; do
+            if mysqladmin ping -h 127.0.0.1 -P 3306 -uroot -proot --silent; then
+              break
+            fi
+            sleep 1
+          done
+
+      - run: npx tsc --noEmit
+      - run: npx eslint .
+      - run: node ace migration:run --connection=mysql
+      - run: node ace db:seed
+      - run: npm test

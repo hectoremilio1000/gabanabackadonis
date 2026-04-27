@@ -10,8 +10,17 @@ const MediaController = () => import('#controllers/media_controller')
 const CatalogsController = () => import('#controllers/catalogs_controller')
 const LeadsController = () => import('#controllers/leads_controller')
 const AdminLeadsController = () => import('#controllers/admin_leads_controller')
+const AgentsController = () => import('#controllers/agents_controller')
+const AdminAgentsController = () => import('#controllers/admin_agents_controller')
+const BillingController = () => import('#controllers/billing_controller')
+const PublicAuthController = () => import('#controllers/public_auth_controller')
+const PublicFavoritesController = () => import('#controllers/public_favorites_controller')
+const SitemapController = () => import('#controllers/sitemap_controller')
 
 router.get('/', async () => ({ api: 'gabana-backend', ok: true }))
+
+// Sprint 7 — sitemap dinámico SEO (fuera del prefijo /api).
+router.get('/sitemap-dynamic.xml', [SitemapController, 'show'])
 
 router
   .group(() => {
@@ -29,14 +38,25 @@ router
     router
       .group(() => {
         router.post('/', [ListingsController, 'store'])
-        router.put('/:id', [ListingsController, 'update'])
-        router.delete('/:id', [ListingsController, 'destroy'])
+        // Sprint 4 — Gap #6: RLS formal en mutaciones por id.
+        router
+          .put('/:id', [ListingsController, 'update'])
+          .use(middleware.enforceListingOwnership())
+        router
+          .delete('/:id', [ListingsController, 'destroy'])
+          .use(middleware.enforceListingOwnership())
 
         // ✅ AHORA SÍ todas las rutas de fotos bajo /listings
         router.get('/:id/photos', [ListingPhotosController, 'index'])
-        router.post('/:id/photos', [ListingPhotosController, 'upload'])
-        router.put('/:id/photos/reorder', [ListingPhotosController, 'reorder'])
-        router.delete('/:id/photos/:photoId', [ListingPhotosController, 'destroy'])
+        router
+          .post('/:id/photos', [ListingPhotosController, 'upload'])
+          .use(middleware.enforceListingOwnership())
+        router
+          .put('/:id/photos/reorder', [ListingPhotosController, 'reorder'])
+          .use(middleware.enforceListingOwnership())
+        router
+          .delete('/:id/photos/:photoId', [ListingPhotosController, 'destroy'])
+          .use(middleware.enforceListingOwnership())
 
         // ⭐ Favoritos (siempre autenticado)
         router.get('/favorites', [ListingFavoritesController, 'index'])
@@ -60,6 +80,22 @@ router
     // Validación + Turnstile (stub) + rate limit 5/min/IP en el controller.
     router.post('/leads', [LeadsController, 'store'])
 
+    // Sprint 4 — Gap #8: agentes públicos.
+    router.get('/agents', [AgentsController, 'index'])
+    router.get('/agents/:slug', [AgentsController, 'show'])
+
+    // Sprint 5 — billing webhook (público, valida firma Stripe).
+    router.post('/billing/webhook', [BillingController, 'webhook'])
+
+    // Sprint 6 — auth pública (magic link) y favoritos públicos.
+    router.post('/auth/public/request', [PublicAuthController, 'request'])
+    router.post('/auth/public/consume', [PublicAuthController, 'consume'])
+    router.get('/auth/public/me', [PublicAuthController, 'me'])
+
+    router.get('/public/favorites', [PublicFavoritesController, 'index'])
+    router.post('/public/listings/:id/favorite', [PublicFavoritesController, 'store'])
+    router.delete('/public/listings/:id/favorite', [PublicFavoritesController, 'destroy'])
+
     // Leads — endpoints admin (Sprint 2, Gap #3 cont.)
     // RLS suave: superadmin/staff ven todo; publisher solo where agent_id = me.id.
     router
@@ -71,8 +107,18 @@ router
             router.get('/leads/:id', [AdminLeadsController, 'show'])
             router.put('/leads/:id', [AdminLeadsController, 'update'])
             router.put('/leads/:id/status', [AdminLeadsController, 'updateStatus'])
+
+            // Sprint 4 — Gap #7: aprobación de agentes.
+            router.get('/agents/pending', [AdminAgentsController, 'pending'])
+            router.post('/agents/:id/approve', [AdminAgentsController, 'approve'])
+            router.post('/agents/:id/reject', [AdminAgentsController, 'reject'])
           })
           .prefix('/admin')
+
+        // Sprint 5 — billing del agente (auth).
+        router.get('/billing/me', [BillingController, 'me'])
+        router.post('/billing/checkout', [BillingController, 'checkout'])
+        router.post('/billing/portal', [BillingController, 'portal'])
       })
       .use(middleware.auth())
   })

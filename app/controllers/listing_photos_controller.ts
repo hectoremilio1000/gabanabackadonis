@@ -72,14 +72,17 @@ export default class ListingPhotosController {
       const localName = file.fileName! // asignado por move()
       const localPath = path.join(tmpDir, localName)
 
-      const url = await ListingMediaUploader.upload({ listingId, localPath })
+      const result = await ListingMediaUploader.upload({ listingId, localPath })
 
-      const photo = await ListingPhoto.create({
-        listingId,
-        url,
-        sortOrder: nextOrder++,
-        isCover: false,
-      })
+      // Sprint 6: el modelo ListingPhoto puede aún no tener `variants` declarado;
+      // lo persistimos con `merge` para evitar TS narrowing y dejarlo retro-compatible.
+      const photo = new ListingPhoto()
+      photo.listingId = listingId
+      photo.url = result.url
+      photo.sortOrder = nextOrder++
+      photo.isCover = false
+      ;(photo as unknown as { variants?: unknown }).variants = result.variants
+      await photo.save()
 
       created.push({
         id: photo.id,
