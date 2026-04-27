@@ -1,0 +1,3 @@
+# Logs generados por verify_sprint_1.sh y futuros scripts de verificación.
+# Path relativo a este archivo (scripts/.gitignore).
+.verify_logs/

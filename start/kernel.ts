@@ -43,4 +43,6 @@ router.use([
  */
 export const middleware = router.named({
   auth: () => import('#middleware/auth_middleware'),
+  enforceListingOwnership: () =>
+    import('#middleware/enforce_listing_ownership_middleware'),
 })

@@ -26,6 +26,21 @@ export const http = defineConfig({
   useAsyncLocalStorage: false,
 
   /**
+   * Query string parser config.
+   *
+   * `comma: false` evita que `?bbox=19.20,-99.40,19.55,-99.05` se transforme
+   * automáticamente en un array de 4 strings — necesitamos preservarlo como
+   * string para que el validator de listings_search aplique el regex.
+   * Los endpoints que reciben listas (p.ej. amenities CSV) hacen su propio
+   * `.split(',')` en el controller.
+   */
+  qs: {
+    parse: {
+      comma: false,
+    },
+  },
+
+  /**
    * Manage cookies configuration. The settings for the session id cookie are
    * defined inside the "config/session.ts" file.
    */
