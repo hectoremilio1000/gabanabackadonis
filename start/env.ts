@@ -41,4 +41,25 @@ export default await Env.create(new URL('../', import.meta.url), {
   S3_SECRET_ACCESS_KEY: Env.schema.string.optional(),
   S3_PUBLIC_BASE_URL: Env.schema.string.optional(),
   API_PUBLIC_BASE_URL: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Sprint 2 — Email transaccional (Resend) y Turnstile
+  |----------------------------------------------------------
+  | RESEND_API_KEY: bloqueante para que el email de "Nuevo lead" llegue al
+  |   agente. Si falta, el lead se persiste pero el email se loggea como
+  |   warning (PRECIOS_DE_FALLO en SPRINT_2_KICKOFF.md).
+  | RESEND_FROM_EMAIL: from address. Default 'Gabana <noreply@gabanarealstate.com.mx>'.
+  | SUPPORT_EMAIL: fallback si el listing no tiene agent_id. Default 'hola@gabanarealstate.com.mx'.
+  | ADMIN_BASE_URL: usado para construir el link al lead en el email del agente.
+  | PUBLIC_SITE_BASE_URL: usado para construir el link a la ficha en el email del agente.
+  | TURNSTILE_SECRET_KEY: opcional Sprint 2-6 (stub mockeado en dev). Activable
+  |   en Sprint 7 sin tocar código (decisión Hector 2026-04-26).
+  */
+  RESEND_API_KEY: Env.schema.string.optional(),
+  RESEND_FROM_EMAIL: Env.schema.string.optional(),
+  SUPPORT_EMAIL: Env.schema.string.optional(),
+  ADMIN_BASE_URL: Env.schema.string.optional(),
+  PUBLIC_SITE_BASE_URL: Env.schema.string.optional(),
+  TURNSTILE_SECRET_KEY: Env.schema.string.optional(),
 })

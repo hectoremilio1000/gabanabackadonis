@@ -8,6 +8,8 @@ const ListingPhotosController = () => import('#controllers/listing_photos_contro
 const ListingFavoritesController = () => import('#controllers/listing_favorites_controller')
 const MediaController = () => import('#controllers/media_controller')
 const CatalogsController = () => import('#controllers/catalogs_controller')
+const LeadsController = () => import('#controllers/leads_controller')
+const AdminLeadsController = () => import('#controllers/admin_leads_controller')
 
 router.get('/', async () => ({ api: 'gabana-backend', ok: true }))
 
@@ -53,5 +55,25 @@ router
     router.get('/states', [CatalogsController, 'states'])
     router.get('/states/:id/municipalities', [CatalogsController, 'municipalitiesByState'])
     router.get('/amenities', [CatalogsController, 'amenities'])
+
+    // Leads — endpoint público (Sprint 2, Gap #3)
+    // Validación + Turnstile (stub) + rate limit 5/min/IP en el controller.
+    router.post('/leads', [LeadsController, 'store'])
+
+    // Leads — endpoints admin (Sprint 2, Gap #3 cont.)
+    // RLS suave: superadmin/staff ven todo; publisher solo where agent_id = me.id.
+    router
+      .group(() => {
+        router.get('/leads/mine', [AdminLeadsController, 'mine'])
+        router
+          .group(() => {
+            router.get('/leads', [AdminLeadsController, 'index'])
+            router.get('/leads/:id', [AdminLeadsController, 'show'])
+            router.put('/leads/:id', [AdminLeadsController, 'update'])
+            router.put('/leads/:id/status', [AdminLeadsController, 'updateStatus'])
+          })
+          .prefix('/admin')
+      })
+      .use(middleware.auth())
   })
   .prefix('/api')
