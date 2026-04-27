@@ -25,7 +25,7 @@ export default class ElFraileListingSeeder extends BaseSeeder {
     const assetBaseUrl =
       process.env.GABANA_PUBLIC_SITE_URL ||
       process.env.NEXT_PUBLIC_SITE_URL ||
-      'https://www.gabanarealestate.com.mx'
+      'https://www.gabanarealstate.com.mx'
 
     const baseUrl = assetBaseUrl.replace(/\/$/, '')
     const photoUrls = photoPaths.map((path) => `${baseUrl}${path}`)
