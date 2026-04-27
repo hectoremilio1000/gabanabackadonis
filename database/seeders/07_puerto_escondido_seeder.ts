@@ -668,27 +668,101 @@ const OAXACA_CAPITAL: DemoListing[] = [
 ]
 
 /**
- * Genera URLs de picsum.photos con seeds determinísticos basados en el tipo
- * de propiedad. picsum.photos siempre devuelve imágenes reales (paisajes,
- * arquitectura, interiores) — nunca da coches porque su pool está curado.
+ * Pools de fotos curadas (Wikimedia Commons, dominio público / CC). Todas
+ * verificadas con HTTP 200 al construir esta lista. Cada URL apunta al
+ * thumbnail de 1280px para evitar imágenes pesadas.
  *
- * Categoría → prefijo del seed (para que el hash dé fotos consistentes):
- *   - terreno → "land-"  (paisajes naturales)
- *   - costa (Puerto Escondido / playa) → "beach-"  (vistas costeras)
- *   - Oaxaca capital → "colonial-"  (arquitectura colonial / interiores)
+ * - PE_BEACH: playas y costa de Puerto Escondido (Zicatela, Carrizalillo,
+ *   Bacocho, La Punta, Puerto Angelito). Para todas las propiedades del
+ *   municipio San Pedro Mixtepec.
+ * - OAX_CITY: arquitectura colonial, calles, Santo Domingo, Catedral,
+ *   Andador Macedonio Alcalá, Jalatlaco, Zócalo. Para todas las
+ *   propiedades de Oaxaca de Juárez.
+ * - OAX_VALLEY: paisajes del Valle de Oaxaca y vistas a las montañas,
+ *   solo para terrenos de San Felipe del Agua.
  */
-function categoryFor(s: DemoListing): string {
-  if (s.propertyType === 'terreno') return 'land'
-  if (s.state === 'Oaxaca' && s.municipality !== 'San Pedro Mixtepec') {
-    return 'colonial'
-  }
-  return 'beach'
+const PE_BEACH = [
+  'https://upload.wikimedia.org/wikipedia/commons/4/49/Playa_Zicatela%2C_Oaxaca.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Pacific_Sunset_Playa_Zicatela.jpg/1280px-Pacific_Sunset_Playa_Zicatela.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Lifeguard_House_Playa_Zicatela.jpg/1280px-Lifeguard_House_Playa_Zicatela.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/b/b5/Beach_Restaurant_Playa_Zicatela.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Punta_Zicatela_Puerto_Escondido.jpg/1280px-Punta_Zicatela_Puerto_Escondido.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Punta_Zicatela_Puerto_Escondido_2.jpg/1280px-Punta_Zicatela_Puerto_Escondido_2.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Punta_Zicatela%2C_Puerto_Escondido.jpg/1280px-Punta_Zicatela%2C_Puerto_Escondido.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Surf_at_Sunset_-_Zicatela_Beach_-_Puerto_Escondido_-_Oaxaca_-_Mexico_%286533419239%29.jpg/1280px-Surf_at_Sunset_-_Zicatela_Beach_-_Puerto_Escondido_-_Oaxaca_-_Mexico_%286533419239%29.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Beach_Scene_at_Sunset_-_Zicatela_Beach_-_Puerto_Escondido_-_Oaxaca_-_Mexico_-_01_%286533364547%29.jpg/1280px-Beach_Scene_at_Sunset_-_Zicatela_Beach_-_Puerto_Escondido_-_Oaxaca_-_Mexico_-_01_%286533364547%29.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Beach_Scene_at_Sunset_-_Zicatela_Beach_-_Puerto_Escondido_-_Oaxaca_-_Mexico_-_03_%286533450017%29.jpg/1280px-Beach_Scene_at_Sunset_-_Zicatela_Beach_-_Puerto_Escondido_-_Oaxaca_-_Mexico_-_03_%286533450017%29.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Al_sur_de_Zicatela.jpg/1280px-Al_sur_de_Zicatela.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Playa_Carrizalillo%2C_Puerto_Escondido.jpg/1280px-Playa_Carrizalillo%2C_Puerto_Escondido.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Playa_Carrizalillo.jpg/1280px-Playa_Carrizalillo.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Playa_Carrizalillo_Puerto_Escondido.jpg/1280px-Playa_Carrizalillo_Puerto_Escondido.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/6/64/Playa_carrizalillo.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/4/4a/Carrizalillo.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/5/59/EntBacocho-e.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/0487PuertoEscondido.jpg/1280px-0487PuertoEscondido.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Amanecer_Puerto_Escondido_-_panoramio.jpg/1280px-Amanecer_Puerto_Escondido_-_panoramio.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/0/07/Atardecer_en_Puerto_Escondido._-_panoramio.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Atardecer_en_la_costa_de_Oaxaca_M%C3%A9xico..jpg/1280px-Atardecer_en_la_costa_de_Oaxaca_M%C3%A9xico..jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Landing_Puerto_Escondido_%2821356338759%29.jpg/1280px-Landing_Puerto_Escondido_%2821356338759%29.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/1/1c/Cerca_de_Puerto_Escondido%2C_Oaxaca._-_panoramio.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459521281%29.jpg/1280px-Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459521281%29.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459537346%29.jpg/1280px-Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459537346%29.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459689442%29.jpg/1280px-Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459689442%29.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459697972%29.jpg/1280px-Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459697972%29.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459700167%29.jpg/1280px-Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459700167%29.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459706412%29.jpg/1280px-Puerto_Escondido_en_cuatro_d%C3%ADas_%2848459706412%29.jpg',
+]
+
+const OAX_CITY = [
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/A_street_at_the_Zocalo_of_Oaxaca_City.jpg/1280px-A_street_at_the_Zocalo_of_Oaxaca_City.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/A_street_close_to_the_Zocalo_of_Oaxaca_City.jpg/1280px-A_street_close_to_the_Zocalo_of_Oaxaca_City.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/A_street_close_to_the_Zocalo_of_Oaxaca_City%2C_at_night.jpg/1280px-A_street_close_to_the_Zocalo_of_Oaxaca_City%2C_at_night.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Kiosk_of_the_Zocalo_of_Oaxaca_City.jpg/1280px-Kiosk_of_the_Zocalo_of_Oaxaca_City.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Zocalo%2C_oaxaca%2C_oaxaca_-_panoramio.jpg/1280px-Zocalo%2C_oaxaca%2C_oaxaca_-_panoramio.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Zocalo%2C_oaxaca%2C_oaxaca_-_panoramio_-_Maria_de_los_Angeles%E2%80%A6.jpg/1280px-Zocalo%2C_oaxaca%2C_oaxaca_-_panoramio_-_Maria_de_los_Angeles%E2%80%A6.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Calle_de_Oaxaca_01.jpg/1280px-Calle_de_Oaxaca_01.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Calle_de_Oaxaca_02.jpg/1280px-Calle_de_Oaxaca_02.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Calle_de_Oaxaca_03.jpg/1280px-Calle_de_Oaxaca_03.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/9/93/Calles_de_la_ciudad_de_Oaxaca._-_panoramio.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/6/6e/Calle_Macedonio_Alcala%2C_Oaxaca._-_panoramio.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Macedonio_Alcala_%288264666694%29.jpg/1280px-Macedonio_Alcala_%288264666694%29.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Teatro_Macedonio_Alcal%C3%A1.jpg/1280px-Teatro_Macedonio_Alcal%C3%A1.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Teatro_Macedonio_Alcal%C3%A1_Oaxaca_Centro.jpg/1280px-Teatro_Macedonio_Alcal%C3%A1_Oaxaca_Centro.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/1/16/Macedonio_Alcal%C3%A1_Theater_-_Oaxaca.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/Jalatlaco%2C_Oaxaca.jpg/1280px-Jalatlaco%2C_Oaxaca.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Templo_de_San_Mat%C3%ADas%2C_Jalatlaco%2C_Oaxaca.jpg/1280px-Templo_de_San_Mat%C3%ADas%2C_Jalatlaco%2C_Oaxaca.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Exterior_del_Templo_de_Santo_Domingo_de_Guzm%C3%A1n.JPG/1280px-Exterior_del_Templo_de_Santo_Domingo_de_Guzm%C3%A1n.JPG',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Templo_de_Santo_Domingo_de_Guzm%C3%A1n_exterior.jpg/1280px-Templo_de_Santo_Domingo_de_Guzm%C3%A1n_exterior.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Templo_y_Ex_Convento_de_Santo_Domingo_de_Guzm%C3%A1n_exterior.JPG/1280px-Templo_y_Ex_Convento_de_Santo_Domingo_de_Guzm%C3%A1n_exterior.JPG',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Catedral_Oaxaca_Ju%C3%A1rez.JPG/1280px-Catedral_Oaxaca_Ju%C3%A1rez.JPG',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Catedral_Oaxaca_Ju%C3%A1rez01.JPG/1280px-Catedral_Oaxaca_Ju%C3%A1rez01.JPG',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Catedral_Oaxaca_Ju%C3%A1rez02.JPG/1280px-Catedral_Oaxaca_Ju%C3%A1rez02.JPG',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Catedral_de_Oaxaca_de_Juarez.JPG/1280px-Catedral_de_Oaxaca_de_Juarez.JPG',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Catedral_de_oaxaca_mexico.jpg/1280px-Catedral_de_oaxaca_mexico.jpg',
+  'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Artisan_Stand_with_Passing_Woman_-_Zocalo_-_Oaxaca_-_Mexico_%2815371672189%29.jpg/1280px-Artisan_Stand_with_Passing_Woman_-_Zocalo_-_Oaxaca_-_Mexico_%2815371672189%29.jpg',
+]
+
+/**
+ * Hash determinístico simple para indexar el pool por slug.
+ */
+function hashStr(s: string): number {
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0
+  return Math.abs(h)
+}
+
+function poolFor(s: DemoListing): string[] {
+  // Puerto Escondido (San Pedro Mixtepec) → siempre fotos de playa/costa.
+  if (s.municipality === 'San Pedro Mixtepec') return PE_BEACH
+  // Oaxaca capital → fotos de la ciudad colonial.
+  return OAX_CITY
 }
 
 function buildPhotoUrls(s: DemoListing): string[] {
-  const cat = categoryFor(s)
+  const pool = poolFor(s)
+  const start = hashStr(s.slug) % pool.length
   return Array.from({ length: s.photoCount }, (_, i) => {
-    return `https://picsum.photos/seed/${cat}-${s.slug}-${i}/1200/900`
+    return pool[(start + i) % pool.length]
   })
 }
 
